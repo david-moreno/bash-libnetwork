@@ -55,8 +55,6 @@ Checks if *iface* is a wireless device
 Example
 -------
 
-We can include it into our script in this way:
-
 ```bash
 #!/bin/bash
 
