@@ -1,0 +1,85 @@
+# libnetwork - A Bash library with basic networking utilities
+# Copyright (C) 2016  David Moreno
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+[[ -z $__libnetwork_version__ ]] && {
+__libnetwork_version__="1.0.0"
+
+#Google's primary public DNS server
+__net_ping_server__="8.8.8.8"
+
+__net_netdir__="/sys/class/net"
+
+function net_available_ifaces {
+	ls $__net_netdir__
+}
+
+function net_iface_isavailable {
+	for i in `net_available_ifaces`; do
+		[[ $1 == $i ]] && { echo 1; return; }
+	done
+	echo 0
+}
+
+function net_get_iface_mac {
+	[[ -d "$__net_netdir__/$1/" ]] && {
+		cat "$__net_netdir__/$1/address"
+	}
+}
+
+function net_get_iface_mtu {
+	[[ -d "$__net_netdir__/$1/" ]] && {
+		cat "$__net_netdir__/$1/mtu"
+	}
+}
+
+function net_iface_up {
+	[[ -d "$__net_netdir__/$1/" ]] && {
+		cat "$__net_netdir__/$1/carrier"
+	}
+}
+
+#Returns the current active iface
+function net_get_iface {
+	l=`route -n| grep '^0.0.0.0'`
+	(($?)) && return
+
+	if=`echo $l | tr -s ' ' | cut -d' ' -f8`
+	echo $if
+}
+
+function net_get_gateway {
+	l=`route -n| grep '^0.0.0.0'`
+	(($?)) && return
+
+	gw=`echo $l | tr -s ' ' | cut -d' ' -f2`
+	echo $gw
+}
+
+function net_connected_inet {
+	#iface
+	ping -c2 -n -q "$__net_ping_server__" &>/dev/null
+	(($?)) && echo 0 || echo 1
+}
+
+function net_iface_iswireless {
+	[[ -d "$__net_netdir__/$1/wireless" ]] && {
+		echo 1
+		return
+	}
+	echo 0
+}
+
+} #Guard end.
