@@ -33,6 +33,12 @@ function net_iface_isavailable {
 	echo 0
 }
 
+function net_get_iface_ip {
+	[[ `net_iface_isavailable $1` -eq 0 ]] && return;
+	ip=`ifconfig $1|grep 'inet:'|cut -d':' -f2|cut -d' ' -f1`
+	echo $ip
+}
+
 function net_get_iface_mac {
 	[[ -d "$__net_netdir__/$1/" ]] && {
 		cat "$__net_netdir__/$1/address"
